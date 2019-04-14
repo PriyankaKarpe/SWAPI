@@ -1,0 +1,5 @@
+---
+applications:
+ - name: swapi-fun-challenge
+   random-route: false
+   memory: 64M

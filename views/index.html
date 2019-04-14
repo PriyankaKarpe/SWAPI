@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fun Watson Service: NodeJS</title>
+
+    <!-- Bootstrap -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/lib/jquery.i18n/jquery.i18n.js"></script>
+    <script src="js/lib/jquery.i18n/jquery.i18n.messagestore.js"></script>
+    <script src="js/lib/jquery.i18n/jquery.i18n.fallbacks.js"></script>
+    <script src="js/lib/jquery.i18n/jquery.i18n.language.js"></script>
+    <script src="js/lib/jquery.i18n/jquery.i18n.parser.js"></script>
+    <script src="js/lib/jquery.i18n/jquery.i18n.emitter.js"></script>
+    <script src="js/lib/jquery.i18n/jquery.i18n.emitter.bidi.js"></script>
+    <script src="antixss.js" type="text/javascript"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+        $( document ).ready(function() {
+            $.i18n().load( {
+            } );
+            $('body').i18n();
+            $('#user_name').attr("placeholder", $.i18n('name') );
+        });
+    </script>
+
+</head>
+
+<body>
+    <div class="container" id="container">
+        <h2 data-i18n="Welcome"></h2> <!- Welcome ->
+
+        <div id="Input" class="input-group-lg center-block helloInput">
+                <h4>Exercise 2</h4>
+                <br><br>
+                <h4>NodeJS Solution</h4><br>
+                <p class="lead" data-i18n="Please click the button below to view the characters from the SWAPI."></p><br>
+
+                <input id="submit_button" type="button" value="Load the Characters" onclick="populate_dropdown()">
+                <br><br>
+                <select id="selectPeople"  onchange="run()">
+                  <option>Select a character</option>
+                </select>
+                <br><br><br>
+          </div>
+          <p id = "msg_1" class="lead text-center" ></p>
+          <p id = "msg_2" class="lead text-center" >Below is the list of the movies selected character.</p>
+          <p id="response1" class="lead text-center"></p>
+    </div>
+    <footer class="footer">
+        <div class="container">
+            <p data-i18n="Priyanka Karpe Exercise 1 Solution"></p>
+        </div>
+    </footer>
+</body>
+</html>
+<script>
+      document.getElementById("msg_1").style.visibility = "hidden";
+      document.getElementById("msg_2").style.visibility = "hidden";
+
+      function removeOptions(selectbox){
+          var i;
+          for(i = selectbox.options.length - 1 ; i >= 0 ; i--){
+            selectbox.remove(i);
+          }
+      }
+      function populate_dropdown() {
+          removeOptions(document.getElementById("selectPeople"));
+          var select = document.getElementById("selectPeople");
+
+          for(var i = 0; i < people_api_output.length; i++) {
+              var opt = people_api_output[i];
+              var el = document.createElement("option");
+              el.textContent = opt;
+              el.value = opt;
+              select.appendChild(el);
+        }
+      }
+      var apiURL = "https://swapi.co/api/people";
+      var people_api_output = [];
+      var people_film_dictionary = {};
+
+      axios.get(apiURL).then(function(response) {
+      for (i = 0; i < response.data.results.length; i++) {
+         people_api_output.push(response.data.results[i].name)
+         people_film_dictionary[response.data.results[i].name] = response.data.results[i].films
+       }
+       });
+
+    function run(){
+      var people_attributes = {};
+      document.getElementById("msg_1").style.visibility = "visible";
+      document.getElementById("msg_2").style.visibility = "visible";
+      var e = document.getElementById("selectPeople");
+      var strUser = e.options[e.selectedIndex].text;
+      var local_string = "https://swapi.co/api/people/?search="+strUser;
+      axios.get(local_string).then(function(response){
+              people_attributes["gender"] = response.data.results[0].gender
+              people_attributes["hair_color"] = response.data.results[0].hair_color
+              people_attributes["birth_year"] = response.data.results[0].birth_year
+              people_attributes["height"] = response.data.results[0].height
+              people_attributes["mass"] = response.data.results[0].mass
+            });
+      console.log(local_string);
+      console.log(people_attributes);
+
+      films_list = people_film_dictionary[strUser];
+      var films_titles = [];
+
+      for(var i = 0;i<films_list.length;i++){
+      axios.get(films_list[i]).then(function(response) {
+        films_titles.push(response.data.title);
+        if(films_list.length - i == 0){
+          document.getElementById("msg_1").innerHTML = ""+strUser+" is a "+people_attributes["gender"]+" character with height "+people_attributes["height"]+" , mass "+people_attributes["mass"]+" , hair color "+people_attributes["hair_color"]+" and birth year "+people_attributes["birth_year"]+".";
+          document.getElementById("response1").innerHTML = films_titles.join(' , ');}
+        });
+      }
+     }
+
+
+</script>
